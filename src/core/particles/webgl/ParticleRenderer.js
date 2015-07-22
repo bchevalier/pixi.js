@@ -26,14 +26,11 @@ function ParticleRenderer(renderer)
 {
     ObjectRenderer.call(this, renderer);
 
-    /**
-     * The number of images in the Particle before it flushes.
-     *
-     * @member {number}
-     */
-    this.size = 15000;//CONST.SPRITE_BATCH_SIZE; // 2000 is a nice balance between mobile / desktop
-
-    var numIndices = this.size * 6;
+    // 65535 is max vertex index in the index buffer (see ParticleRenderer)
+    // so max number of particles is 65536 / 4 = 16384
+    // and max number of element in the index buffer is 16384 * 6 = 98304
+    // Creating a full index buffer, overhead is 98304 * 2 = 196Ko
+    var numIndices = 98304;
 
     /**
      * Holds the indices
@@ -162,7 +159,8 @@ ParticleRenderer.prototype.render = function ( container )
 {
     var children = container.children,
         totalChildren = children.length,
-        maxSize = container._size;
+        maxSize = container._totalSize,
+        batchSize = container._batchSize;
 
     if(totalChildren === 0)
     {
@@ -217,12 +215,12 @@ ParticleRenderer.prototype.render = function ( container )
 
     // now lets upload and render the buffers..
     var j = 0;
-    for (var i = 0; i < totalChildren; i+=this.size)
+    for (var i = 0; i < totalChildren; i+=batchSize)
     {
-         var amount = ( totalChildren - i);
-        if(amount > this.size)
+        var amount = ( totalChildren - i);
+        if(amount > batchSize)
         {
-            amount = this.size;
+            amount = batchSize;
         }
 
         var buffer = container._buffers[j++];
@@ -256,12 +254,13 @@ ParticleRenderer.prototype.generateBuffers = function ( container )
     var gl = this.renderer.gl,
         buffers = [],
         size = container._size,
+        batchSize = container._batchSize,
         dynamicPropertyFlags = container._properties,
         i;
 
     for (i = 0; i < size; i += this.size)
     {
-        buffers.push( new ParticleBuffer(gl,  this.properties, dynamicPropertyFlags, this.size) );
+        buffers.push( new ParticleBuffer(gl,  this.properties, dynamicPropertyFlags, batchSize) );
     }
 
     return buffers;
