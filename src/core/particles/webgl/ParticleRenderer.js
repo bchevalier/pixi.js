@@ -202,7 +202,6 @@ ParticleRenderer.prototype.render = function ( container )
         if(!container._properties[0] || !container._properties[3])
         {
             container._bufferToUpdate = 0;
-            // uploadStatic = true;
         }
     }
     else
