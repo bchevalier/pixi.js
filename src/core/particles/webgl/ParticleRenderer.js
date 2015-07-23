@@ -159,7 +159,7 @@ ParticleRenderer.prototype.render = function ( container )
 {
     var children = container.children,
         totalChildren = children.length,
-        maxSize = container._totalSize,
+        maxSize = container._maxSize,
         batchSize = container._batchSize;
 
     if(totalChildren === 0)
@@ -253,12 +253,12 @@ ParticleRenderer.prototype.generateBuffers = function ( container )
 {
     var gl = this.renderer.gl,
         buffers = [],
-        size = container._size,
+        size = container._maxSize,
         batchSize = container._batchSize,
         dynamicPropertyFlags = container._properties,
         i;
 
-    for (i = 0; i < size; i += this.size)
+    for (i = 0; i < size; i += batchSize)
     {
         buffers.push( new ParticleBuffer(gl,  this.properties, dynamicPropertyFlags, batchSize) );
     }
