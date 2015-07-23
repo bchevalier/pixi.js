@@ -188,10 +188,6 @@ ParticleRenderer.prototype.render = function ( container )
     gl.uniformMatrix3fv(this.shader.uniforms.projectionMatrix._location, false, m.toArray(true));
     gl.uniform1f(this.shader.uniforms.uAlpha._location, container.worldAlpha);
 
-
-    // if this variable is true then we will upload the static contents as well as the dynamic contents
-    var uploadStatic = container._updateStatic;
-
     // make sure the texture is bound..
     var baseTexture = children[0]._texture.baseTexture;
 
@@ -205,7 +201,8 @@ ParticleRenderer.prototype.render = function ( container )
 
         if(!container._properties[0] || !container._properties[3])
         {
-            uploadStatic = true;
+            container._bufferToUpdate = 0;
+            // uploadStatic = true;
         }
     }
     else
@@ -229,10 +226,10 @@ ParticleRenderer.prototype.render = function ( container )
         buffer.uploadDynamic(children, i, amount);
 
         // we only upload the static content when we have to!
-        if(uploadStatic)
+        if(container._bufferToUpdate <= j)
         {
             buffer.uploadStatic(children, i, amount);
-            container._updateStatic = false;
+            container._bufferToUpdate = j + 1;
         }
 
         // bind the buffer
